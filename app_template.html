@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#4b3fd6">
+<title>HW4 Flashcards</title>
+<meta name="description" content="80 flashcards on A/B testing, choice models, bandits and ML, with spaced repetition and randomized calculation drills.">
+<style>
+:root{
+  --bg:#f5f4fb; --panel:#fff; --ink:#1c1b29; --muted:#6c6a80; --line:#e4e2ef; --soft:#efedf8;
+  --accent:#4b3fd6; --again:#d2453b; --hard:#d98a1a; --good:#2a9563; --easy:#2f6fdb; --shadow:0 4px 18px rgba(40,30,120,.08);
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#13121c; --panel:#1c1b28; --ink:#ecebf5; --muted:#a3a1b8; --line:#2d2b3d; --soft:#24223a; --accent:#8f84ff; --shadow:0 4px 18px rgba(0,0,0,.45);
+}}
+:root[data-theme="dark"]{ --bg:#13121c; --panel:#1c1b28; --ink:#ecebf5; --muted:#a3a1b8; --line:#2d2b3d; --soft:#24223a; --accent:#8f84ff; --shadow:0 4px 18px rgba(0,0,0,.45); }
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none !important}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:560px;margin:0 auto;padding:12px 14px calc(84px + env(safe-area-inset-bottom))}
+header{display:flex;justify-content:space-between;align-items:center;padding:6px 2px 10px}
+h1{font-size:20px;margin:0}
+.muted{color:var(--muted)} .small{font-size:13px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;scrollbar-width:none}
+.chip{flex:none;font:inherit;font-size:13px;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:5px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:#fff}
+.stats{display:flex;gap:8px;margin:6px 0 12px}
+.stat{flex:1;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:8px 10px;text-align:center}
+.stat b{display:block;font-size:20px;font-variant-numeric:tabular-nums} .stat span{font-size:11.5px;color:var(--muted)}
+.card{background:var(--panel);border-radius:18px;box-shadow:var(--shadow);border:1px solid var(--line);min-height:300px;padding:22px 20px;display:flex;flex-direction:column;cursor:pointer;user-select:none;transition:transform .15s}
+.card:active{transform:scale(.99)}
+.topic{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--accent)}
+.front{font-size:20px;font-weight:650;line-height:1.35;margin:10px 0}
+.back{font-size:16.5px;border-top:1px dashed var(--line);padding-top:12px;margin-top:6px;animation:fade .2s}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1}}
+.tap{margin-top:auto;font-size:13px;color:var(--muted);text-align:center}
+.rate{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px}
+.rate button{font:inherit;font-weight:700;border:0;border-radius:12px;padding:12px 4px;color:#fff;cursor:pointer;line-height:1.2}
+.rate button small{display:block;font-weight:500;font-size:11px;opacity:.9}
+.again{background:var(--again)} .hard{background:var(--hard)} .good{background:var(--good)} .easy{background:var(--easy)}
+.done{text-align:center;padding:40px 16px}
+.done b{font-size:44px;display:block}
+.btn{font:inherit;font-weight:600;border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:12px;padding:11px 16px;cursor:pointer}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.quiz .prompt{font-size:17.5px;line-height:1.45;margin:8px 0 12px}
+.answer{display:flex;gap:8px}
+.answer input{flex:1;font:inherit;font-size:20px;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:var(--panel);color:var(--ink);min-width:0}
+.answer input:focus{outline:none;border-color:var(--accent)}
+.feedback{margin-top:12px;border-radius:12px;padding:12px;font-size:15px}
+.feedback.ok{background:color-mix(in srgb,var(--good) 14%,transparent)} .feedback.no{background:color-mix(in srgb,var(--again) 12%,transparent)}
+.steps{font:13.5px/1.6 "SF Mono",Menlo,monospace;white-space:pre-wrap;margin-top:8px}
+.bar{height:8px;background:var(--soft);border-radius:5px;overflow:hidden;margin:4px 0 10px}
+.bar div{height:100%;background:var(--accent)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+td,th{padding:7px 4px;border-bottom:1px solid var(--line);text-align:left} td:last-child,th:last-child{text-align:right}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--panel);border-top:1px solid var(--line);display:flex;justify-content:center;padding-bottom:env(safe-area-inset-bottom)}
+nav button{flex:1;max-width:186px;font:inherit;font-size:12px;border:0;background:none;color:var(--muted);padding:9px 0 10px;cursor:pointer}
+nav button b{display:block;font-size:20px}
+nav button[aria-current="page"]{color:var(--accent);font-weight:700}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header><h1>🧠 HW4 Flashcards</h1><span class="small muted" id="streak"></span></header>
+
+  <section id="study">
+    <div class="chips" id="topics"></div>
+    <div class="stats"><div class="stat"><b id="sDue">0</b><span>due now</span></div><div class="stat"><b id="sNew">0</b><span>new today</span></div><div class="stat"><b id="sDone">0</b><span>reviewed today</span></div></div>
+    <div class="card" id="card" role="button" tabindex="0" aria-label="Flashcard: tap to reveal">
+      <div class="topic" id="cTopic"></div>
+      <div class="front" id="cFront"></div>
+      <div class="back" id="cBack" hidden></div>
+      <div class="tap" id="cTap">Tap to reveal</div>
+    </div>
+    <div class="rate" id="rate" hidden>
+      <button class="again" data-r="again">Again<small id="iAgain"></small></button>
+      <button class="hard" data-r="hard">Hard<small id="iHard"></small></button>
+      <button class="good" data-r="good">Good<small id="iGood"></small></button>
+      <button class="easy" data-r="easy">Easy<small id="iEasy"></small></button>
+    </div>
+    <div class="done" id="allDone" hidden><b>🎉</b><h2>All caught up</h2><p class="muted" id="nextDue"></p><button class="btn primary" id="moreNew">Study 10 more new cards</button></div>
+  </section>
+
+  <section id="quiz" class="quiz" hidden>
+    <div class="chips" id="qtypes"></div>
+    <div class="card" style="cursor:default">
+      <div class="topic" id="qTopic"></div>
+      <div class="prompt" id="qPrompt"></div>
+      <form class="answer" id="qForm"><input id="qIn" inputmode="decimal" autocomplete="off" placeholder="Your answer" aria-label="Your answer"><button class="btn primary">Check</button></form>
+      <div class="small muted" id="qHint" style="margin-top:6px"></div>
+      <div id="qFeedback" hidden></div>
+      <button class="btn" id="qNext" style="margin-top:12px" hidden>Next question →</button>
+    </div>
+  </section>
+
+  <section id="progress" hidden>
+    <h2 style="font-size:18px">Cards</h2>
+    <div id="pCards"></div>
+    <h2 style="font-size:18px">Calculation drills</h2>
+    <table id="pQuiz"></table>
+    <p class="small muted">Progress is saved on this device. Spaced repetition: "Again" brings a card back in a minute, "Good" spaces it out (10 min, then 1 day, then about 2.5× longer each time), and "Easy" spaces it further.</p>
+    <button class="btn" id="reset">Reset all progress</button>
+  </section>
+</div>
+<nav>
+  <button data-tab="study" aria-current="page"><b>🗂️</b>Study</button>
+  <button data-tab="quiz"><b>🧮</b>Quiz</button>
+  <button data-tab="progress"><b>📈</b>Progress</button>
+</nav>
+
+<script id="cards">
+/*CARDS*/
+</script>
+<script id="core">
+/* ---------- scheduling + quiz generators (tested by test.mjs) ---------- */
+const FC = (() => {
+  const MIN = 60e3, DAY = 864e5;
+  // SM-2-style scheduling. state: { reps, ease, interval (ms), due (ms), lapses }
+  function newState() { return { reps: 0, ease: 2.5, interval: 0, due: 0, lapses: 0 }; }
+  function schedule(st, rating, now) {
+    const s = { ...st };
+    if (rating === "again") { s.reps = 0; s.lapses++; s.ease = Math.max(1.3, s.ease - 0.2); s.interval = MIN; }
+    else if (rating === "hard") { s.ease = Math.max(1.3, s.ease - 0.15); s.interval = s.reps === 0 ? 5 * MIN : Math.max(10 * MIN, s.interval * 1.2); s.reps++; }
+    else if (rating === "good") { s.interval = s.reps === 0 ? 10 * MIN : s.reps === 1 ? DAY : s.interval * s.ease; s.reps++; }
+    else if (rating === "easy") { s.ease += 0.15; s.interval = s.reps === 0 ? 4 * DAY : Math.max(4 * DAY, s.interval * s.ease * 1.3); s.reps++; }
+    s.due = now + s.interval;
+    return s;
+  }
+  const label = ms => (ms < 60 * MIN ? Math.round(ms / MIN) + " min" : ms < DAY ? Math.round(ms / 36e5) + " h" : (ms / DAY < 10 ? (ms / DAY).toFixed(1).replace(/\.0$/, "") : Math.round(ms / DAY)) + " d");
+  // next card: the most overdue due card; otherwise a new card if today's new allowance remains
+  function pickNext(cards, states, now, newLeft) {
+    let best = null;
+    for (const c of cards) { const s = states[c.id]; if (s && s.reps + s.lapses > 0 && s.due <= now && (!best || s.due < states[best.id].due)) best = c; }
+    if (best) return { card: best, isNew: false };
+    if (newLeft > 0) { const c = cards.find(c => !states[c.id] || (states[c.id].reps === 0 && states[c.id].lapses === 0 && !states[c.id].seen)); if (c) return { card: c, isNew: true }; }
+    return null;
+  }
+  // ---- calculation drills: each returns { topic, prompt, answer, tol, unit, steps } ----
+  function mulberry32(seed) { let a = seed >>> 0; return () => { a = (a + 0x6D2B79F5) >>> 0; let t = a; t = Math.imul(t ^ (t >>> 15), t | 1); t ^= t + Math.imul(t ^ (t >>> 7), t | 61); return ((t ^ (t >>> 14)) >>> 0) / 4294967296; }; }
+  const ri = (r, a, b) => a + Math.floor(r() * (b - a + 1)), pick = (r, xs) => xs[Math.floor(r() * xs.length)];
+  const fx = (x, d) => Number(x.toFixed(d)).toLocaleString("en-US", { maximumFractionDigits: d });
+  const GEN = {
+    ztest: { name: "z from A/B counts", topic: "A/B testing", make(r) {
+      const nA = pick(r, [10000, 20000, 25000, 40000]), nB = nA, pa = ri(r, 40, 80) / 1000, lift = ri(r, 2, 12) / 1000;
+      const xA = Math.round(nA * pa), xB = Math.round(nB * (pa + lift)), pA = xA / nA, pB = xB / nB, p = (xA + xB) / (nA + nB), se = Math.sqrt(p * (1 - p) * (1 / nA + 1 / nB)), z = (pB - pA) / se;
+      return { prompt: `A: ${xA.toLocaleString()} conversions out of ${nA.toLocaleString()}. B: ${xB.toLocaleString()} out of ${nB.toLocaleString()}. Compute the pooled z statistic for B − A.`, answer: z, tol: 0.02, unit: "",
+        steps: `p_A = ${pA.toFixed(4)}, p_B = ${pB.toFixed(4)}\np̂ = (${xA} + ${xB}) / ${nA + nB} = ${p.toFixed(5)}\nSE = √(p̂(1−p̂)(1/n_A + 1/n_B)) = ${se.toFixed(6)}\nz = (${pB.toFixed(4)} − ${pA.toFixed(4)}) / ${se.toFixed(6)} = ${z.toFixed(3)}` }; } },
+    samplesize: { name: "Sample size per arm", topic: "A/B testing", make(r) {
+      const p1 = ri(r, 3, 12) / 100, d = pick(r, [0.004, 0.005, 0.01, 0.015, 0.02]), p2 = p1 + d, V = p1 * (1 - p1) + p2 * (1 - p2), n = Math.ceil(2.487 ** 2 * V / (d * d) - 1e-9);
+      return { prompt: `Detect ${(100 * p1).toFixed(1)}% → ${(100 * p2).toFixed(1)}% with one-sided α = 0.05 and 80% power (z = 1.645, 0.842; unpooled variance). Visitors per arm?`, answer: n, tol: Math.max(2, n * 0.003), unit: "visitors",
+        steps: `n = (1.645 + 0.842)² × [p₁(1−p₁) + p₂(1−p₂)] / d²\n  = 6.185169 × ${V.toFixed(6)} / ${(d * d).toFixed(6)}\n  = ${(6.185169 * V / (d * d)).toFixed(1)} → round up: ${n.toLocaleString()}` }; } },
+    payback: { name: "Payback days", topic: "A/B testing", make(r) {
+      const v = pick(r, [60000, 90000, 120000, 200000]), lift = ri(r, 3, 12) / 1000, m = ri(r, 15, 60), cost = pick(r, [10000, 18000, 25000, 40000]), dollars = v * lift * m, days = cost / (dollars / 30);
+      return { prompt: `A change lifts conversion by ${(100 * lift).toFixed(1)} pts on ${v.toLocaleString()} visitors/month at $${m} margin each. It cost $${cost.toLocaleString()} to build. Payback in days (30-day month)?`, answer: days, tol: 0.15, unit: "days",
+        steps: `Extra margin = ${v.toLocaleString()} × ${lift.toFixed(3)} × $${m} = $${fx(dollars, 0)}/month\nPayback = ${cost.toLocaleString()} / (${fx(dollars, 0)} / 30) = ${days.toFixed(2)} days` }; } },
+    ci: { name: "95% CI half-width", topic: "A/B testing", make(r) {
+      const n = pick(r, [5000, 10000, 20000]), pA = ri(r, 40, 90) / 1000, pB = pA + ri(r, 3, 12) / 1000, se = Math.sqrt(pA * (1 - pA) / n + pB * (1 - pB) / n), h = 1.96 * se;
+      return { prompt: `p_A = ${pA.toFixed(3)}, p_B = ${pB.toFixed(3)}, ${n.toLocaleString()} visitors in each arm. Half-width of the 95% CI for p_B − p_A (unpooled), in percentage points?`, answer: 100 * h, tol: 0.01, unit: "pts",
+        steps: `SE = √(p_A(1−p_A)/n + p_B(1−p_B)/n) = ${se.toFixed(6)}\nHalf-width = 1.96 × SE = ${h.toFixed(5)} = ${(100 * h).toFixed(3)} pts` }; } },
+    logit: { name: "Logit share", topic: "Choice models", make(r) {
+      const va = ri(r, -5, 25) / 10, vb = ri(r, -5, 25) / 10, ea = Math.exp(va), eb = Math.exp(vb), P = ea / (ea + eb + 1);
+      return { prompt: `V(A) = ${va.toFixed(1)}, V(B) = ${vb.toFixed(1)}, "Not now" V = 0. What share chooses A? (answer as a decimal)`, answer: P, tol: 0.003, unit: "",
+        steps: `e^${va.toFixed(1)} = ${ea.toFixed(4)}, e^${vb.toFixed(1)} = ${eb.toFixed(4)}, e^0 = 1\nP(A) = ${ea.toFixed(4)} / (${ea.toFixed(4)} + ${eb.toFixed(4)} + 1) = ${P.toFixed(4)}` }; } },
+    wtp: { name: "Willingness to pay", topic: "Choice models", make(r) {
+      const b = ri(r, 20, 120) / 100, bp = -ri(r, 15, 45) / 1000, w = b / -bp;
+      return { prompt: `A logit gives a feature coefficient of ${b.toFixed(2)} and a price coefficient of ${bp.toFixed(3)} per dollar. Willingness to pay for the feature, in dollars?`, answer: w, tol: 0.05, unit: "$",
+        steps: `WTP = β_feature / (−β_price) = ${b.toFixed(2)} / ${(-bp).toFixed(3)} = $${w.toFixed(2)}` }; } },
+    precision: { name: "Precision / recall", topic: "Machine learning", make(r) {
+      const tp = ri(r, 50, 300), fp = ri(r, 10, 200), fn = ri(r, 30, 300), which = r() < 0.5 ? "precision" : "recall", v = which === "precision" ? tp / (tp + fp) : tp / (tp + fn);
+      return { prompt: `TP = ${tp}, FP = ${fp}, FN = ${fn}. What is the ${which}? (decimal)`, answer: v, tol: 0.002, unit: "",
+        steps: which === "precision" ? `Precision = TP / (TP + FP) = ${tp} / ${tp + fp} = ${v.toFixed(4)}` : `Recall = TP / (TP + FN) = ${tp} / ${tp + fn} = ${v.toFixed(4)}` }; } },
+    breakeven: { name: "Break-even cutoff", topic: "Machine learning", make(r) {
+      const cfp = pick(r, [100, 150, 200, 300, 400]), cfn = pick(r, [80, 120, 180, 250, 500, 900]), c = cfp / (cfp + cfn);
+      return { prompt: `A false positive costs $${cfp}, a false negative $${cfn}. For calibrated scores, flag above what probability? (decimal)`, answer: c, tol: 0.002, unit: "",
+        steps: `Flag when p × ${cfn} > (1 − p) × ${cfp}\n⇔ p > ${cfp} / (${cfp} + ${cfn}) = ${c.toFixed(4)}` }; } },
+    regret: { name: "Regret of a test", topic: "Bandits", make(r) {
+      const rates = [ri(r, 30, 50) / 1000, ri(r, 51, 70) / 1000, ri(r, 20, 45) / 1000], T = pick(r, [60000, 90000, 180000]), test = pick(r, [6000, 12000, 18000, 30000]), best = Math.max(...rates);
+      const plan = test / 3 * rates.reduce((a, b) => a + b) + (T - test) * best, reg = T * best - plan;
+      return { prompt: `Rates A ${(100 * rates[0]).toFixed(1)}%, B ${(100 * rates[1]).toFixed(1)}%, C ${(100 * rates[2]).toFixed(1)}%. Split the first ${test.toLocaleString()} of ${T.toLocaleString()} visitors evenly, then show B. Regret in conversions?`, answer: reg, tol: 0.6, unit: "conversions",
+        steps: `Oracle = ${T.toLocaleString()} × ${best.toFixed(3)} = ${fx(T * best, 1)}\nPlan = ${(test / 3).toLocaleString()} × (${rates.map(x => x.toFixed(3)).join(" + ")}) + ${(T - test).toLocaleString()} × ${best.toFixed(3)} = ${fx(plan, 1)}\nRegret = ${fx(reg, 1)}` }; } },
+    epsilon: { name: "ε-greedy P(leader)", topic: "Bandits", make(r) {
+      const e = pick(r, [0.05, 0.1, 0.15, 0.2, 0.3]), K = pick(r, [2, 3, 4, 5]), p = 1 - e + e / K;
+      return { prompt: `ε-greedy with ε = ${e} over ${K} options; exploring picks uniformly among all ${K} (leader included). Probability the current leader is shown?`, answer: p, tol: 0.002, unit: "",
+        steps: `P(leader) = (1 − ε) + ε/K = ${(1 - e).toFixed(2)} + ${e}/${K} = ${p.toFixed(4)}` }; } },
+    beta: { name: "Beta posterior mean", topic: "Bandits", make(r) {
+      const n = ri(r, 3, 40), s = ri(r, 0, n), m = (1 + s) / (2 + n);
+      return { prompt: `Thompson sampling with a Beta(1, 1) prior. A subject line was opened ${s} times out of ${n} sends. What is the posterior mean?`, answer: m, tol: 0.002, unit: "",
+        steps: `Posterior = Beta(1 + ${s}, 1 + ${n - s}) = Beta(${1 + s}, ${1 + n - s})\nMean = a/(a + b) = ${1 + s}/${2 + n} = ${m.toFixed(4)}` }; } },
+    auc: { name: "AUC by pair counting", topic: "Machine learning", make(r) {
+      const draw = k => Array.from({ length: k }, () => ri(r, 1, 9) / 10).sort((a, b) => b - a), pos = draw(pick(r, [3, 4])), neg = draw(pick(r, [3, 4, 5]));
+      let s = 0; for (const p of pos) for (const q of neg) s += p > q ? 1 : p === q ? 0.5 : 0;
+      return { prompt: `Positives scored ${pos.join(", ")}; negatives ${neg.join(", ")}. AUC by pair counting (ties = ½)?`, answer: s / (pos.length * neg.length), tol: 0.002, unit: "",
+        steps: pos.map(p => `${p}: ${neg.filter(q => p > q).length} below` + (neg.some(q => q === p) ? ` + ½×${neg.filter(q => q === p).length} tie` : "")).join("\n") + `\nAUC = ${s} / (${pos.length} × ${neg.length}) = ${(s / (pos.length * neg.length)).toFixed(4)}` }; } },
+  };
+  function check(q, input) {
+    const v = Number(String(input).replace(/[$,%\s]/g, ""));
+    if (!isFinite(v) || String(input).trim() === "") return null;
+    return Math.abs(v - q.answer) <= q.tol;
+  }
+  return { MIN, DAY, newState, schedule, label, pickNext, mulberry32, GEN, check };
+})();
+if (typeof module !== "undefined") module.exports = FC;
+</script>
+<script>
+const CARDS = window.CARDS, $ = id => document.getElementById(id), now = () => Date.now();
+const KEY = "hw4-flash-v1", today = () => new Date().toISOString().slice(0, 10);
+const load = () => { try { return JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { return {}; } };
+const save = () => { try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} };
+let S = Object.assign({ states: {}, day: today(), newToday: 0, doneToday: 0, newLimit: 15, quiz: {}, days: [], topic: "All" }, load());
+if (S.day !== today()) { S.day = today(); S.newToday = 0; S.doneToday = 0; S.newLimit = 15; }
+const TOPICS = ["All", ...new Set(CARDS.map(c => c.topic))];
+let current = null, revealed = false, qType = "mix", q = null, qSeed = (Math.random() * 2 ** 31) | 0;
+
+function deck() { return S.topic === "All" ? CARDS : CARDS.filter(c => c.topic === S.topic); }
+function renderTopics() {
+  $("topics").innerHTML = TOPICS.map(t => `<button class="chip" aria-pressed="${t === S.topic}" data-t="${t}">${t}</button>`).join("");
+  $("topics").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { S.topic = b.dataset.t; save(); renderTopics(); next(); }));
+}
+function counts() {
+  const d = deck(), t = now();
+  return { due: d.filter(c => { const s = S.states[c.id]; return s && s.reps + s.lapses > 0 && s.due <= t; }).length, unseen: d.filter(c => !S.states[c.id] || !S.states[c.id].seen).length };
+}
+function next() {
+  const c = counts(), pick = FC.pickNext(deck(), S.states, now(), S.newLimit - S.newToday);
+  $("sDue").textContent = c.due; $("sNew").textContent = `${S.newToday}/${S.newLimit}`; $("sDone").textContent = S.doneToday;
+  revealed = false; $("rate").hidden = true; $("cBack").hidden = true; $("cTap").hidden = false;
+  if (!pick) {
+    current = null; $("card").hidden = true; $("allDone").hidden = false;
+    const upcoming = deck().map(c => S.states[c.id]).filter(s => s && s.due > now()).map(s => s.due).sort((a, b) => a - b)[0];
+    $("nextDue").textContent = upcoming ? `Next review in ${FC.label(upcoming - now())}.` + (c.unseen ? ` ${c.unseen} cards you haven't seen yet.` : "") : `${c.unseen} new cards left in this deck.`;
+    $("moreNew").hidden = !c.unseen;
+    return;
+  }
+  current = pick; $("card").hidden = false; $("allDone").hidden = true;
+  $("cTopic").textContent = pick.card.topic + (pick.isNew ? " · new" : ""); $("cFront").textContent = pick.card.front; $("cBack").textContent = pick.card.back;
+  const st = S.states[pick.card.id] || FC.newState();
+  ["again", "hard", "good", "easy"].forEach(r => ($("i" + r[0].toUpperCase() + r.slice(1)).textContent = FC.label(FC.schedule(st, r, 0).interval)));
+}
+function reveal() { if (!current || revealed) return; revealed = true; $("cBack").hidden = false; $("cTap").hidden = true; $("rate").hidden = false; }
+function rate(r) {
+  if (!current || !revealed) return;
+  const id = current.card.id, st = S.states[id] || FC.newState();
+  if (current.isNew) S.newToday++;
+  S.states[id] = { ...FC.schedule(st, r, now()), seen: true }; S.doneToday++;
+  if (!S.days.includes(today())) S.days.push(today());
+  save(); next(); streak();
+}
+function streak() {
+  let n = 0; const d = new Date();
+  while (S.days.includes(d.toISOString().slice(0, 10))) { n++; d.setDate(d.getDate() - 1); }
+  $("streak").textContent = n ? `🔥 ${n}-day streak` : "";
+}
+$("card").addEventListener("click", reveal);
+$("card").addEventListener("keydown", e => { if (e.key === " " || e.key === "Enter") { e.preventDefault(); reveal(); } });
+document.querySelectorAll("#rate button").forEach(b => b.addEventListener("click", () => rate(b.dataset.r)));
+document.addEventListener("keydown", e => { if ($("study").hidden || !revealed) return; const m = { 1: "again", 2: "hard", 3: "good", 4: "easy" }[e.key]; if (m) rate(m); });
+$("moreNew").addEventListener("click", () => { S.newLimit += 10; save(); next(); });
+
+/* ---------- quiz ---------- */
+function renderQTypes() {
+  const types = [["mix", "🎲 Mix"], ...Object.entries(FC.GEN).map(([k, g]) => [k, g.name])];
+  $("qtypes").innerHTML = types.map(([k, n]) => `<button class="chip" aria-pressed="${k === qType}" data-k="${k}">${n}</button>`).join("");
+  $("qtypes").querySelectorAll(".chip").forEach(b => b.addEventListener("click", () => { qType = b.dataset.k; renderQTypes(); newQ(); }));
+}
+function newQ() {
+  const r = FC.mulberry32(qSeed++), keys = Object.keys(FC.GEN), k = qType === "mix" ? keys[Math.floor(r() * keys.length)] : qType;
+  q = { ...FC.GEN[k].make(r), key: k, topic: FC.GEN[k].topic, name: FC.GEN[k].name };
+  $("qTopic").textContent = `${q.topic} · ${q.name}`; $("qPrompt").textContent = q.prompt; $("qIn").value = ""; $("qIn").disabled = false;
+  $("qHint").textContent = `Accepted within ±${q.tol < 0.01 ? q.tol : +q.tol.toFixed(2)}${q.unit && q.unit !== "$" ? " " + q.unit : ""}.`;
+  $("qFeedback").hidden = true; $("qNext").hidden = true;
+}
+$("qForm").addEventListener("submit", e => {
+  e.preventDefault(); if (!q || $("qIn").disabled) return;
+  const res = FC.check(q, $("qIn").value); if (res === null) { $("qHint").textContent = "Type a number (e.g. 3.14 or 27687)."; return; }
+  const st = S.quiz[q.key] || { right: 0, total: 0 }; st.total++; if (res) st.right++; S.quiz[q.key] = st; save();
+  const fb = $("qFeedback"); fb.hidden = false; fb.className = "feedback " + (res ? "ok" : "no");
+  const shown = Math.abs(q.answer) >= 100 ? Math.round(q.answer).toLocaleString() : (+q.answer.toFixed(4)).toString();
+  fb.innerHTML = `${res ? "✅ Correct!" : "❌ Not quite."} Answer: <b>${q.unit === "$" ? "$" : ""}${shown}${q.unit && q.unit !== "$" ? " " + q.unit : ""}</b><div class="steps">${q.steps}</div>`;
+  $("qIn").disabled = true; $("qNext").hidden = false; $("qNext").focus();
+});
+$("qNext").addEventListener("click", newQ);
+
+/* ---------- progress ---------- */
+function renderProgress() {
+  const t = now();
+  $("pCards").innerHTML = TOPICS.slice(1).map(top => {
+    const cs = CARDS.filter(c => c.topic === top), seen = cs.filter(c => S.states[c.id] && S.states[c.id].seen).length;
+    const mature = cs.filter(c => S.states[c.id] && S.states[c.id].interval >= 7 * FC.DAY).length, due = cs.filter(c => { const s = S.states[c.id]; return s && s.seen && s.due <= t; }).length;
+    return `<div><b>${top}</b> <span class="small muted">· ${seen}/${cs.length} seen · ${mature} solid (7+ day interval) · ${due} due</span><div class="bar"><div style="width:${100 * seen / cs.length}%"></div></div></div>`;
+  }).join("");
+  const rows = Object.entries(FC.GEN).map(([k, g]) => { const s = S.quiz[k]; return `<tr><td>${g.name}</td><td>${s ? `${s.right}/${s.total} (${Math.round(100 * s.right / s.total)}%)` : "–"}</td></tr>`; });
+  $("pQuiz").innerHTML = "<tr><th>Drill</th><th>Correct</th></tr>" + rows.join("");
+}
+$("reset").addEventListener("click", () => { if (confirm("Reset all flashcard and quiz progress on this device?")) { S = { states: {}, day: today(), newToday: 0, doneToday: 0, newLimit: 15, quiz: {}, days: [], topic: "All" }; save(); renderTopics(); next(); renderProgress(); streak(); } });
+
+/* ---------- tabs ---------- */
+function tab(t) {
+  ["study", "quiz", "progress"].forEach(s => ($(s).hidden = s !== t));
+  document.querySelectorAll("nav button").forEach(b => (b.getAttribute("data-tab") === t ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current")));
+  if (t === "progress") renderProgress(); if (t === "quiz" && !q) newQ(); if (t === "study") next();
+}
+document.querySelectorAll("nav button").forEach(b => b.addEventListener("click", () => tab(b.dataset.tab)));
+renderTopics(); renderQTypes(); next(); streak();
+const qs = new URLSearchParams(location.search);
+if (qs.get("demo") === "reveal") reveal();
+if (qs.has("tab")) { if (qs.get("tab") === "quiz") { qType = qs.get("type") || "mix"; renderQTypes(); } tab(qs.get("tab")); if (qs.get("answer")) { $("qIn").value = qs.get("answer") === "right" ? q.answer.toFixed(4) : "1"; $("qForm").requestSubmit(); } }
+</script>
+</body>
+</html>
